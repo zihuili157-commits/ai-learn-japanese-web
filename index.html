@@ -281,23 +281,57 @@ return {text:"收到。在离线模式里我能完整带学这两课：**は 与
 }
 
 /* ---------- online (DeepSeek) ---------- */
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function errText(e){
+if(e&&e.name==="AbortError") return "等了太久，接口一直没有回应（网络慢、被拦截或服务繁忙都可能），已自动停下。";
+if(e&&e.message) return e.message;
+return "未知错误";
+}
+function apiErrHint(status){
+if(status===401) return "Key 不对、已失效或没粘全，重新粘一次试试。";
+if(status===402) return "账户余额不足，去 DeepSeek 平台充值后重试。";
+if(status===429) return "请求太频繁或额度受限，稍等一会儿再试。";
+return "检查一下 Key 有没有粘全、账户有没有余额；或者先用离线模式学前两课。";
+}
 async function onlineReply(){
 el("typing").style.display="block";
-var bubble = addMsg("assistant","");
-var full="";
+var bubble = addMsg("assistant","正在连接 DeepSeek…");
+var full="", gotFirst=false;
+var ctrl=("AbortController" in window)?new AbortController():null;
+var firstTimer=setTimeout(function(){ if(ctrl&&!gotFirst) ctrl.abort(); },30000);
+var stallTimer=null;
+function armStall(){ if(stallTimer)clearTimeout(stallTimer); stallTimer=setTimeout(function(){ if(ctrl) ctrl.abort(); },60000); }
 try{
-var res = await fetch("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({model:el("model").value,messages:history,stream:true,temperature:0.7})});
-if(!res.ok){ var t=await res.text(); throw new Error("接口返回 "+res.status+"："+t.slice(0,160));}
+var res = await fetch("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({model:el("model").value,messages:history,stream:true,temperature:0.7}),signal:ctrl?ctrl.signal:undefined});
+clearTimeout(firstTimer);
+if(!res.ok){ var t=""; try{ t=await res.text(); }catch(e2){} throw new Error("接口返回 "+res.status+"："+t.slice(0,160)); }
+if(res.body&&res.body.getReader){
 var reader=res.body.getReader(), dec=new TextDecoder(), buf="";
-while(true){ var r=await reader.read(); if(r.done)break; buf+=dec.decode(r.value,{stream:true});
+armStall();
+while(true){ var r=await reader.read(); if(r.done)break; gotFirst=true; armStall(); buf+=dec.decode(r.value,{stream:true});
 var lines=buf.split("\n"); buf=lines.pop();
 for(var i=0;i<lines.length;i++){ var ln=lines[i].trim(); if(ln.indexOf("data:")!==0)continue; var data=ln.slice(5).trim(); if(data==="[DONE]")continue;
-try{ var j=JSON.parse(data); var delta=(j.choices[0].delta&&j.choices[0].delta.content)||""; full+=delta; bubble.innerHTML=fmt(full); el("chat").scrollTop=el("chat").scrollHeight;}catch(e){}
+try{ var j=JSON.parse(data); var delta=(j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content)||""; if(delta){ full+=delta; bubble.innerHTML=fmt(full); el("chat").scrollTop=el("chat").scrollHeight; } }catch(e){}
 }
 }
+}else{
+/* 不支持流式读取的浏览器（如部分 iPad Safari）：改走一次性返回 */
+var j2=await res.json(); gotFirst=true;
+full=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||"";
+if(full){ bubble.innerHTML=fmt(full); el("chat").scrollTop=el("chat").scrollHeight; }
+}
+if(stallTimer)clearTimeout(stallTimer);
+if(!full){
+var notice="接口连上了，但这次没有返回任何内容。可能是网络中途断了一下——把刚才的话再发一次试试，还不行就点「新对话」重开。";
+bubble.textContent=notice; history.push({role:"assistant",content:notice});
+}else{
 history.push({role:"assistant",content:full});
+}
 }catch(e){
-bubble.innerHTML="连接没成功："+e.message+"<br><br>检查一下 Key 有没有粘全、账户有没有余额；或者先用离线模式学前两课。";
+clearTimeout(firstTimer); if(stallTimer)clearTimeout(stallTimer);
+var m=errText(e);
+var st=(m.match(/接口返回 (\d+)/)||[])[1];
+bubble.innerHTML="⚠ 这次没连上："+esc(m)+"<br><br>"+(st?apiErrHint(+st):"如果一直这样，多半是网络到不了 api.deepseek.com（换个网络试试），或 Key 已失效。问题解决后把刚才的话再发一次就行。");
 history.pop();
 }
 el("typing").style.display="none";
@@ -306,12 +340,16 @@ el("typing").style.display="none";
 async function send(text){
 if(busy) return; var v=(text||el("input").value).trim(); if(!v)return;
 el("input").value=""; autoGrow(); addMsg("user",v); history.push({role:"user",content:v}); busy=true; el("sendBtn").disabled=true;
+try{
 if(apiKey){ await onlineReply();}
 else{ el("typing").style.display="block"; await new Promise(function(r){setTimeout(r,500)}); el("typing").style.display="none";
 var rep=offlineReply(v); var b=addMsg("assistant",rep.text); history.push({role:"assistant",content:rep.text});
 if(rep.quiz) addQuiz(b,rep.quiz[0],rep.quiz[1],rep.quiz[2],rep.quiz[3]);
 }
-busy=false; el("sendBtn").disabled=false; el("input").focus();
+}catch(e){
+addMsg("assistant","⚠ 出了点问题："+errText(e)+"\n\n再发一次试试；一直不行就点右上角「新对话」重开。");
+}
+busy=false; el("sendBtn").disabled=false; el("typing").style.display="none"; el("input").focus();
 }
 function closeDrawer(){ el("sidebar").classList.remove("open"); el("backdrop").classList.remove("show");}
 function openDrawer(){ el("sidebar").classList.add("open"); el("backdrop").classList.add("show");}
@@ -329,11 +367,31 @@ el("menuBtn").onclick=function(){ el("sidebar").classList.contains("open")?close
 el("backdrop").onclick=closeDrawer;
 el("closeMenu").onclick=closeDrawer;
 document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeDrawer();});
-el("saveKey").onclick=function(){
-var k=el("apiKey").value.trim();
-if(!k){ el("keyStatus").textContent="先把 Key 粘进来"; return;}
-apiKey=k; el("keyStatus").textContent="✓ 已连接（Key 只在本次页面内存里）"; el("keyStatus").className="status ok";
-addMsg("assistant","连接好了。これから よろしくね。\n\n直接告诉我你想学什么，或者点「📚 目录」选一课。我会先问你这节想达到什么程度，再用一道探边题找到你的边界，然后逐点带学——每点学完都有检查题，答错我们就停下来拆清楚，不往上硬建。");
+var verifying=false;
+el("saveKey").onclick=async function(){
+if(verifying) return;
+var k=el("apiKey").value.replace(/\s+/g,"");
+if(!k){ el("keyStatus").textContent="先把 Key 粘进来"; el("keyStatus").className="status"; return;}
+verifying=true; el("saveKey").disabled=true; el("saveKey").textContent="验证中…";
+el("keyStatus").textContent="正在向 DeepSeek 验证这个 Key…"; el("keyStatus").className="status";
+var ctrl=("AbortController" in window)?new AbortController():null;
+var timer=setTimeout(function(){ if(ctrl) ctrl.abort(); },20000);
+try{
+var res=await fetch("https://api.deepseek.com/models",{method:"GET",headers:{"Authorization":"Bearer "+k},signal:ctrl?ctrl.signal:undefined});
+clearTimeout(timer);
+if(!res.ok){ var t=""; try{ t=await res.text(); }catch(e2){}
+throw new Error("接口返回 "+res.status+"："+t.slice(0,160)); }
+apiKey=k;
+el("keyStatus").textContent="✓ 已连接，Key 验证通过（只留在本次页面内存里）"; el("keyStatus").className="status ok";
+addMsg("assistant","连接好了，Key 验证通过。これから よろしくね。\n\n直接告诉我你想学什么，或者点「📚 目录」选一课。我会先问你这节想达到什么程度，再用一道探边题找到你的边界，然后逐点带学——每点学完都有检查题，答错我们就停下来拆清楚，不往上硬建。");
+}catch(e){
+clearTimeout(timer);
+var m=errText(e);
+var st=(m.match(/接口返回 (\d+)/)||[])[1];
+el("keyStatus").textContent="✗ 没连上："+m; el("keyStatus").className="status";
+addMsg("assistant","⚠ Key 验证没通过："+m+"\n\n"+(st?apiErrHint(+st):"多半是网络到不了 api.deepseek.com——换个网络（比如关掉代理或换 Wi-Fi）再点一次「连接」。")+"\n\n在连上之前，先用离线模式也能学「は 与 です」和「たい形」两课。");
+}
+verifying=false; el("saveKey").disabled=false; el("saveKey").textContent="连接";
 };
 el("clearBtn").onclick=function(){ history=[{role:"system",content:SYSTEM}]; el("chatWrap").innerHTML=""; currentLesson=""; done={}; renderLessons(); greet();};
 function greet(){
