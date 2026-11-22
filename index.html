@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" href="data:,"/>
+<title>ai learn 学日语</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#f7f5f0; --surface:#ffffff; --surface2:#f0ede6; --ink:#1c1a17; --muted:#6f6a61; --line:#e3ded2;
+--accent:#c73e2e; --accent-ink:#fff; --teal:#0f766e; --gold:#b45309; --bubble-ai:#ffffff; --bubble-me:#1c1a17;
+--radius:16px;
+}
+@media (prefers-color-scheme: dark){
+:root{ --bg:#141311; --surface:#1e1c19; --surface2:#26231f; --ink:#ece8df; --muted:#a39c8f; --line:#35312b; --bubble-ai:#1e1c19; --bubble-me:#ece8df;}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans JP",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;display:flex;flex-direction:column}
+button,input,select,textarea{font:inherit}
+button{min-height:40px;cursor:pointer}
+a{color:var(--teal)}
+/* header */
+header{border-bottom:1px solid var(--line);background:var(--surface);padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.brand{font-family:"Noto Serif SC",serif;font-weight:700;font-size:19px;letter-spacing:.02em}
+.brand span{color:var(--accent)}
+.keybar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1;min-width:260px}
+.keybar input[type=password]{flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink)}
+.keybar select{padding:9px 10px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);min-height:40px}
+.pill{border:1px solid var(--line);background:var(--surface2);border-radius:999px;padding:8px 14px;font-size:13px}
+.pill.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.status{font-size:12px;color:var(--muted)}
+.status.ok{color:var(--teal);font-weight:600}
+/* layout */
+.layout{flex:1;display:grid;grid-template-columns:272px 1fr;min-height:0}
+aside{border-right:1px solid var(--line);background:var(--surface);overflow-y:auto;padding:16px 14px}
+aside h2{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:14px 4px 8px;font-weight:700}
+aside h2:first-child{margin-top:0}
+.lesson{display:flex;gap:10px;width:100%;text-align:left;border:0;background:transparent;padding:9px 10px;border-radius:10px;color:var(--ink);align-items:baseline}
+.lesson:hover{background:var(--surface2)}
+.lesson.active{background:#fdf0ec;color:var(--accent);font-weight:700}
+@media (prefers-color-scheme: dark){.lesson.active{background:#33231f}}
+.lesson.no{font-size:11px;color:var(--muted);min-width:22px}
+.lesson.jp{font-size:13px;color:var(--muted);display:block;font-weight:400}
+.done-dot{margin-left:auto;color:var(--teal);font-size:12px}
+/* chat */
+main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.quick{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 4px}
+.quick button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:13.5px}
+.quick button:hover{border-color:var(--accent);color:var(--accent)}
+#chat{flex:1;overflow-y:auto;padding:16px;scroll-behavior:smooth}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.avatar{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:14px;font-weight:700}
+.msg.ai.avatar{background:var(--accent);color:#fff}
+.msg.me{flex-direction:row-reverse}
+.msg.me.avatar{background:var(--ink);color:var(--bg)}
+.bubble{max-width:86%;padding:12px 15px;border-radius:var(--radius);line-height:1.75;font-size:15px;white-space:pre-wrap;word-break:break-word}
+.msg.ai.bubble{background:var(--bubble-ai);border:1px solid var(--line);border-top-left-radius:4px}
+.msg.me.bubble{background:var(--bubble-me);color:var(--bg);border-top-right-radius:4px}
+@media (prefers-color-scheme: dark){.msg.me.bubble{color:#141311}}
+.bubble strong{font-weight:700}
+.bubble.keyline{display:block;text-align:center;font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;padding:12px 8px;margin:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.bubble.formula{display:block;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;font-weight:700;letter-spacing:.03em}
+.bubble table{border-collapse:collapse;margin:10px 0;font-size:14px}
+.bubble td,.bubble th{border:1px solid var(--line);padding:6px 10px}
+.quizbox{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.quizbox button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;color:var(--ink)}
+.quizbox button.right{border-color:var(--teal);background:#ecfdf5;color:#065f46}
+.quizbox button.wrong{border-color:var(--accent);background:#fef2f2;color:#991b1b}
+.typing{color:var(--muted);font-size:13px;padding:0 16px 6px;max-width:760px;margin:0 auto;width:100%}
+/* composer */
+.composer{border-top:1px solid var(--line);background:var(--surface);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.composer-in{max-width:760px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:14px;padding:11px 13px;max-height:140px;background:var(--bg);color:var(--ink);line-height:1.5}
+.send{background:var(--accent);color:#fff;border:0;border-radius:14px;padding:0 20px;font-weight:700;min-height:46px}
+.send:disabled{opacity:.5}
+.hint{max-width:760px;margin:8px auto 0;font-size:12px;color:var(--muted);line-height:1.6}
+details.help{max-width:760px;margin:6px auto 0;font-size:13px;color:var(--muted)}
+details.help summary{min-height:36px;display:flex;align-items:center;cursor:pointer;color:var(--teal);font-weight:600}
+@media (max-width:760px){
+.layout{grid-template-columns:1fr}
+aside{display:none}
+aside.open{display:block;border-right:0;border-bottom:1px solid var(--line);max-height:46vh}
+#menuBtn{display:inline-block!important}
+.bubble{max-width:92%}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="brand">あ <span>ai learn</span> 学日语</div>
+<button class="pill" id="menuBtn" style="display:none">📚 目录</button>
+<div class="keybar">
+<input type="password" id="apiKey" placeholder="粘贴你的 DeepSeek API Key（sk-…）" autocomplete="off"/>
+<select id="model"><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-reasoner">deepseek-reasoner</option></select>
+<button class="pill primary" id="saveKey">连接</button>
+<span class="status" id="keyStatus">未连接 · 现在是离线体验模式</span>
+</div>
+<button class="pill" id="clearBtn">新对话</button>
+</header>
+
+<div class="layout">
+<aside id="sidebar">
+<h2>怎么开始</h2>
+<p style="font-size:13px;color:var(--muted);line-height:1.7;margin:4px">① 上面粘贴 DeepSeek Key 点「连接」<br>② 点下面任意一课，或直接在对话框说想学什么<br>③ 老师会先问目标、做一道探边题，再带你学</p>
+<h2>入门 · 句子骨架</h2>
+<div id="lessons1"></div>
+<h2>进阶 · 变形与表达</h2>
+<div id="lessons2"></div>
+<h2>我的进度（本次打开）</h2>
+<p id="progressText" style="font-size:13px;color:var(--muted);margin:4px">还没学完任何一课</p>
+</aside>
+
+<main>
+<div class="quick">
+<button data-q="我想学新语法，先问我目标，再给我做探边题">🌱 学新语法</button>
+<button data-q="带我背单词：先让我选范围，然后用闪卡带我练，我说可以了再出题验收">🃏 带我背单词</button>
+<button data-q="出题考我，考我最近学过的语法，答错要讲清为什么错">✏️ 出题考我</button>
+<button data-q="陪我用日语聊天，我卡住时会用中文告诉你我想说什么，你教我说完再继续聊">💬 日语聊天陪练</button>
+<button data-q="我想复习，帮我把容易错的点挑出来问我">🔁 复习易错点</button>
+</div>
+<div id="chat"><div class="wrap" id="chatWrap"></div></div>
+<div class="typing" id="typing" style="display:none">老师正在想…</div>
+<div class="composer">
+<div class="composer-in">
+<textarea id="input" rows="1" placeholder="想学什么，直接说…"></textarea>
+<button class="send" id="sendBtn">发送</button>
+</div>
+<details class="help"><summary>没有 Key / Key 填哪儿？点开看</summary>
+<p>去 platform.deepseek.com 注册 → API Keys → 新建，复制 sk- 开头的那串粘到上面。Key 只留在这次打开的页面内存里，不保存、不上传到别处；关掉页面就没了，下次再粘一次即可。没填 Key 也能先用离线体验模式学前几课。</p>
+</details>
+<p class="hint">学法就是 ai learn 那套：先问目标 → 探边找边界 → 给路线 → 逐点带学（关键句定格＋公式装盒）→ 每点两道题检查，答错不往上建。</p>
+</div>
+</main>
+</div>
+
+<script>
+var SYSTEM = "你是一位日语老师，正在用 ai learn 的 teach 方法带一位中国大学生学日语，教材参考《超好笑！我是日语学习书》的顺序（共63个语法点）。全程用中文讲解，日语例句带假名注音和中文翻译。严格按流程：1)开学先用一个简短问题确认目标（理解原理/会用/应试/先混脸熟）和当前水平；2)给一道探边题找知识边界，不许假定学生会或不会；3)给出依赖路线（地基→接续→用法→例句→造句），用简洁列表呈现；4)逐点带学：每次只讲一个点，先给一句单独成行，再把公式居中成行呈现，然后给3个由易到难的原味例句，最后让学生造一个句子；5)每个点学完出1道选择题检查，答错要逐个拆干扰项对应的误解、带学生回看，不许直接进入下一点；6)学生用中文说出想表达的意思时，先教他日语怎么说、让他复述，再无缝继续对话；7)语气亲切、具体、不说空话，不一次倒一大堆内容，每次回复末尾给出清晰的下一步（让学生回答/选择/造句）。排版：关键句用「…」单独一行，公式用「公式：…」单独一行，方便前端渲染。";
+
+var LESSONS1 = [
+["は 与 です","わたしは 学生です","判断句的骨架"],
+["が 与 あります／います","机の上に 本が あります","存在句"],
+["を・に・へ・で","ご飯を 食べます","核心格助词"],
+["ます形与时态","行きます／行きました","礼貌体全套"],
+["て形","食べて、寝ます","连接动作的万能形"],
+["ない形与禁止","行かない／行くな","否定与命令"],
+["から・ので・けど","暑いから、窓を開けます","原因与转折"]
+];
+var LESSONS2 = [
+["たい形","日本へ 行きたいです","想做某事"],
+["た形与经验","寿司を 食べたことがあります","有过……经历"],
+["ている","今、勉強しています","正在／一直"],
+["可能形","漢字が 読めます","能做某事"],
+["条件 たら・ば","雨が降ったら、行きません","如果……就"],
+["比较与最高","東京は 大阪より 大きいです","比……更"],
+["授受 くれる・あげる・もらう","友達が 教えてくれました","人情的方向"]
+];
+var done = {};
+var history = [{role:"system",content:SYSTEM}];
+var apiKey = "", busy = false, currentLesson = "";
+
+function el(id){return document.getElementById(id)}
+function renderLessons(){
+function fill(box, arr, off){
+box.innerHTML="";
+arr.forEach(function(L,i){
+var b=document.createElement("button"); b.className="lesson"+(currentLesson===L[0]?" active":"");
+b.innerHTML='<span class="no">'+(off+i+1)+'</span><span>'+L[0]+'<span class="jp">'+L[1]+'</span></span>'+(done[L[0]]?'<span class="done-dot">✓学会</span>':"");
+b.onclick=function(){ startLesson(L);};
+box.appendChild(b);
+});
+}
+fill(el("lessons1"),LESSONS1,0); fill(el("lessons2"),LESSONS2,7);
+var n=Object.keys(done).length;
+el("progressText").textContent = n? ("已学完 "+n+" 课："+Object.keys(done).join("、")): "还没学完任何一课";
+}
+function fmt(t){
+var s=t.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+s=s.replace(/(.+)/g,'<span class="keyline">$1</span>');
+s=s.replace(/公式[:：](.+)/g,'<span class="formula">$1</span>');
+return s;
+}
+function addMsg(role, text){
+var d=document.createElement("div"); d.className="msg "+(role==="user"?"me":"ai");
+d.innerHTML='<div class="avatar">'+(role==="user"?"我":"あ")+'</div><div class="bubble">'+fmt(text)+'</div>';
+el("chatWrap").appendChild(d); el("chat").scrollTop=el("chat").scrollHeight;
+return d.querySelector(".bubble");
+}
+function addQuiz(bubble, q, opts, answer, explain){
+var box=document.createElement("div"); box.className="quizbox";
+var title=document.createElement("div"); title.innerHTML="<strong>检查题：</strong>"+q; box.appendChild(title);
+opts.forEach(function(o,i){
+var b=document.createElement("button"); b.textContent=["A","B","C","D"][i]+"．"+o;
+b.onclick=function(){
+if(i===answer){ b.className="right"; box.insertAdjacentHTML("beforeend","<div style='font-size:14px'>✓ 对了。"+explain+"</div>"); if(currentLesson){done[currentLesson]=1; renderLessons();}}
+else{ b.className="wrong"; box.insertAdjacentHTML("beforeend","<div style='font-size:14px'>✗ 不对。"+explain+" 回到上面关键句再看一眼，换一个试试。</div>");}
+};
+box.appendChild(b);
+});
+bubble.appendChild(box); el("chat").scrollTop=el("chat").scrollHeight;
+}
+
+/* ---------- offline tutor (no key) ---------- */
+var OFFLINE = {
+"は 与 です":{key:"わたしは 学生です。",formula:"名词 は 名词 です",body:"**关键句定格**\nわたしは 学生（がくせい）です。—— 我是学生。\n\nは 读 wa，是「话题标记」：先把话题拎出来，再说它怎么样。です 是礼貌的「是」，句尾一定要有它，句子才站得住。\n\n例句：\n① これは 本（ほん）です。这是一本书。\n② 田中さんは 先生（せんせい）です。田中是老师。\n③ わたしは 中国人（ちゅうごくじん）です。我是中国人。\n\n轮到你：用这个公式介绍一下你自己（名字或专业都行），打出来我看看。",quiz:["「我是老师」哪句对？",["わたしは 先生です","わたし 先生 はです","わたしは 先生 ます"],0,"は 标话题、です 收尾，顺序不能乱。"]},
+"たい形":{key:"日本へ 行きたいです。",formula:"动词ます形去ます ＋ たいです",body:"**变形标注图**\n日本（にほん）へ 行（い）きたいです。—— 我想去日本。\n\nたい 是给动词装的「愿望尾巴」：把 ます 摘掉，换上 たい，整个动词就变成像形容词一样变形。\n\n例句：\n① 寿司（すし）を 食（た）べたいです。我想吃寿司。\n② 今日は 何もしたくない。今天什么都不想做。（否定：たくない）\n③ 新しい靴（くつ）を 買（か）いたいです。我想买新鞋。\n\n轮到你：说一句你现在最想做的事，用 たい 造出来。",quiz:["「我想喝水」哪句对？",["水を 飲みたいです","水を 飲みますたいです","水を 飲むたいです"],0,"先变ます形 飲みます，去ます加たい。"]}
+};
+function offlineReply(userText){
+for(var k in OFFLINE){ if(userText.indexOf(k)>=0 || (currentLesson===k && userText.length>0 &&!userText.match(/学|课/))) {
+if(userText.indexOf(k)>=0){ var L=OFFLINE[k]; return {text:L.body, quiz:L.quiz};}
+}}
+if(/背单词|闪卡/.test(userText)) return {text:"好，走背词流程：一组先看词＋例句，自己练，**你说「可以了」我才出题验收**，错词会记下来按 1→3→7 天再出现。\n\n先来第一组（食べ物）：\n① 寿司（すし）寿司　② 拉麺（らーめん）拉面　③ 水（みず）水\n例句：寿司を 食べたいです。\n\n慢慢看，看好了跟我说「可以了」。",quiz:null};
+if(/考我|出题|复习/.test(userText)) return {text:"好，先来一道探边题，看看你的边界在哪儿——答错没关系，错在哪儿，边界就在哪儿。",quiz:["「我想去日本」哪句对？",["日本へ 行きたいです","日本へ 行きますたいです","日本を 行きたいです"],0,"去向用 へ，想做用 たい形。"]};
+if(/聊天|陪练/.test(userText)) return {text:"いいよ、話（はな）そう！用日语聊，卡住就直接用中文告诉我你想说什么，我教你说完再继续。\n\n今日（きょう）は どうだった？（今天怎么样？）",quiz:null};
+if(/可以了/.test(userText)) return {text:"好，验收开始，答对才算过关。",quiz:["「拉面」的日语是？",["らーめん","すし","みず"],0,"らーめん 是拉面，すし 是寿司，みず 是水。"]};
+if(currentLesson && OFFLINE[currentLesson]){ var L2=OFFLINE[currentLesson]; return {text:"收到。我先看你的句子——结构对不对，关键看公式：\n公式："+L2.formula+"\n\n如果拿不准，就对照关键句换词造句。来，再试着用这个点造一个新句子，或者点下面的检查题验收这一课。",quiz:L2.quiz};}
+return {text:"收到。在离线模式里我能完整带学这两课：**は 与 です**、**たい形**（点左侧目录进去），其余课和自由问答需要先在顶部粘贴 DeepSeek Key 点「连接」。填好 Key 之后，你想学什么直接说，我会先问目标、做探边题，再逐点带你学。",quiz:null};
+}
+
+/* ---------- online (DeepSeek) ---------- */
+async function onlineReply(){
+el("typing").style.display="block";
+var bubble = addMsg("assistant","");
+var full="";
+try{
+var res = await fetch("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({model:el("model").value,messages:history,stream:true,temperature:0.7})});
+if(!res.ok){ var t=await res.text(); throw new Error("接口返回 "+res.status+"："+t.slice(0,160));}
+var reader=res.body.getReader(), dec=new TextDecoder(), buf="";
+while(true){ var r=await reader.read(); if(r.done)break; buf+=dec.decode(r.value,{stream:true});
+var lines=buf.split("\n"); buf=lines.pop();
+for(var i=0;i<lines.length;i++){ var ln=lines[i].trim(); if(ln.indexOf("data:")!==0)continue; var data=ln.slice(5).trim(); if(data==="[DONE]")continue;
+try{ var j=JSON.parse(data); var delta=(j.choices[0].delta&&j.choices[0].delta.content)||""; full+=delta; bubble.innerHTML=fmt(full); el("chat").scrollTop=el("chat").scrollHeight;}catch(e){}
+}
+}
+history.push({role:"assistant",content:full});
+}catch(e){
+bubble.innerHTML="连接没成功："+e.message+"<br><br>检查一下 Key 有没有粘全、账户有没有余额；或者先用离线模式学前两课。";
+history.pop();
+}
+el("typing").style.display="none";
+}
+
+async function send(text){
+if(busy) return; var v=(text||el("input").value).trim(); if(!v)return;
+el("input").value=""; autoGrow(); addMsg("user",v); history.push({role:"user",content:v}); busy=true; el("sendBtn").disabled=true;
+if(apiKey){ await onlineReply();}
+else{ el("typing").style.display="block"; await new Promise(function(r){setTimeout(r,500)}); el("typing").style.display="none";
+var rep=offlineReply(v); var b=addMsg("assistant",rep.text); history.push({role:"assistant",content:rep.text});
+if(rep.quiz) addQuiz(b,rep.quiz[0],rep.quiz[1],rep.quiz[2],rep.quiz[3]);
+}
+busy=false; el("sendBtn").disabled=false; el("input").focus();
+}
+function startLesson(L){
+currentLesson=L[0]; renderLessons(); el("sidebar").classList.remove("open");
+send("我想学这一课："+L[0]+"（"+L[2]+"）。参考句："+L[1]+"。先问我这节的目标，再给我一道探边题，然后带我学。");
+}
+function autoGrow(){ var t=el("input"); t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,140)+"px";}
+
+el("sendBtn").onclick=function(){send()};
+el("input").addEventListener("input",autoGrow);
+el("input").addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
+document.querySelectorAll(".quick button").forEach(function(b){ b.onclick=function(){ send(b.getAttribute("data-q"));};});
+el("menuBtn").onclick=function(){ el("sidebar").classList.toggle("open");};
+el("saveKey").onclick=function(){
+var k=el("apiKey").value.trim();
+if(!k){ el("keyStatus").textContent="先把 Key 粘进来"; return;}
+apiKey=k; el("keyStatus").textContent="✓ 已连接（Key 只在本次页面内存里）"; el("keyStatus").className="status ok";
+addMsg("assistant","连接好了。これから よろしくね。\n\n直接告诉我你想学什么，或者点左侧目录选一课。我会先问你这节想达到什么程度，再用一道探边题找到你的边界，然后逐点带学——每点学完都有检查题，答错我们就停下来拆清楚，不往上硬建。");
+};
+el("clearBtn").onclick=function(){ history=[{role:"system",content:SYSTEM}]; el("chatWrap").innerHTML=""; currentLesson=""; done={}; renderLessons(); greet();};
+function greet(){
+addMsg("assistant","こんにちは，我是你的日语老师。\n\n两种用法：**点目录选一课**，或直接在下面说你想学什么（比如「我想学 たい 形」）。我会先问目标、做一道探边题找边界，再给你路线、逐点带学。\n\n还没填 DeepSeek Key 的话，现在是离线体验模式，能完整学「は 与 です」和「たい形」两课；填了 Key 就能学全部内容、自由提问。\n\n今日は 何を 勉強（べんきょう）したい？今天想学什么？");
+}
+renderLessons(); greet();
+</script>
+</body>
+</html>
