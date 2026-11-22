@@ -28,6 +28,12 @@ img,table{max-width:100%}
 header{border-bottom:1px solid var(--line);background:var(--surface);padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;flex:none;z-index:30}
 .brand{font-family:"Noto Serif SC",serif;font-weight:700;font-size:19px;letter-spacing:.02em;white-space:nowrap}
 .brand span{color:var(--accent)}
+.ver{font-family:"Noto Sans JP",sans-serif;font-size:11px;font-weight:700;color:var(--teal);border:1px solid var(--teal);border-radius:999px;padding:2px 8px;vertical-align:middle;letter-spacing:.04em}
+#diagBtn{border-color:var(--teal);color:var(--teal);font-weight:700;background:var(--surface)}
+#diagBtn:disabled{opacity:.5}
+.diagline{font-size:13.5px;line-height:1.65;padding:3px 0;border-bottom:1px dashed var(--line);word-break:break-word;overflow-wrap:anywhere}
+.diagline:last-child{border-bottom:0}
+.diagline.bad{color:var(--accent);font-weight:600}
 .keybar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1;min-width:260px}
 .keybar input[type=password]{flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);min-height:42px}
 .keybar select{padding:9px 10px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);min-height:42px}
@@ -98,7 +104,8 @@ header{gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-top,0px))}
 .brand{font-size:17px;order:1}
 #menuBtn{display:inline-flex!important;align-items:center;order:2;margin-left:auto;min-height:44px;padding:8px 16px;font-weight:700}
 #clearBtn{order:3;min-height:44px}
-.keybar{order:4;flex:1 1 100%;min-width:0;display:grid;grid-template-columns:1fr auto;gap:8px}
+#diagBtn{order:4;min-height:44px;font-size:14px;padding:8px 16px}
+.keybar{order:5;flex:1 1 100%;min-width:0;display:grid;grid-template-columns:1fr auto;gap:8px}
 .keybar input[type=password]{grid-column:1/-1;min-width:0;width:100%;font-size:16px;min-height:48px;padding:10px 14px}
 .keybar select{font-size:16px;min-height:48px;min-width:0}
 .keybar .pill.primary{min-height:48px;padding:8px 20px;font-size:14px}
@@ -146,7 +153,7 @@ aside.open{animation:none}
 </head>
 <body>
 <header>
-<div class="brand">あ <span>ai learn</span> 学日语</div>
+<div class="brand">あ <span>ai learn</span> 学日语 <span class="ver" id="verBadge">v5</span></div>
 <button class="pill" id="menuBtn" style="display:none">📚 目录</button>
 <div class="keybar">
 <input type="password" id="apiKey" placeholder="粘贴你的 DeepSeek API Key（sk-…）" autocomplete="off"/>
@@ -155,6 +162,7 @@ aside.open{animation:none}
 <span class="status" id="keyStatus">未连接 · 现在是离线体验模式</span>
 </div>
 <button class="pill" id="clearBtn">新对话</button>
+<button class="pill" id="diagBtn">🔍 诊断</button>
 </header>
 
 <div id="backdrop" aria-hidden="true"></div>
@@ -191,7 +199,7 @@ aside.open{animation:none}
 <details class="help"><summary>没有 Key / Key 填哪儿？点开看</summary>
 <p>去 platform.deepseek.com 注册 → API Keys → 新建，复制 sk- 开头的那串粘到上面。Key 只留在这次打开的页面内存里，不保存、不上传到别处；关掉页面就没了，下次再粘一次即可。没填 Key 也能先用离线体验模式学前几课。</p>
 </details>
-<p class="hint">学法就是 ai learn 那套：先问目标 → 探边找边界 → 给路线 → 逐点带学（关键句定格＋公式装盒）→ 每点两道题检查，答错不往上建。</p>
+<p class="hint">学法就是 ai learn 那套：先问目标 → 探边找边界 → 给路线 → 逐点带学（关键句定格＋公式装盒）→ 每点两道题检查，答错不往上建。发消息没反应时，点顶部「🔍 诊断」，把结果截图发回来。页面版本 <strong id="verFoot">v5</strong></p>
 </div>
 </main>
 </div>
@@ -218,7 +226,10 @@ var LESSONS2 = [
 ["授受 くれる・あげる・もらう","友達が 教えてくれました","人情的方向"]
 ];
 var done = {};
-var history = [{role:"system",content:SYSTEM}];
+var PAGE_VERSION = "v5";
+/* 对话记录不用 history 这个名字：它和浏览器内置的 window.history 同名，
+   在部分 Safari 上全局 var 盖不住内置对象，history.push 会抛错且发送链静默中断。 */
+var chatHistory = [{role:"system",content:SYSTEM}];
 var apiKey = "", busy = false, currentLesson = "";
 
 function el(id){return document.getElementById(id)}
@@ -340,7 +351,7 @@ var s=Math.round((Date.now()-started)/1000);
 bubble.textContent="正在等 DeepSeek 回复… 已等 "+s+" 秒（最多等 90 秒，超时会自动停下并说明原因，不会一直没反应）";
 },1000);
 try{
-var res=await fetchWithTimeout("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({model:el("model").value,messages:history,stream:false,temperature:0.7})},90000);
+var res=await fetchWithTimeout("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({model:el("model").value,messages:chatHistory,stream:false,temperature:0.7})},90000);
 clearInterval(tick);
 bubble.textContent="DeepSeek 已回应，正在读取内容…";
 if(!res.ok){ var t=await readErrBody(res); throw new Error("接口返回 "+res.status+"："+t.slice(0,200)); }
@@ -350,10 +361,10 @@ catch(e3){ if(e3&&e3.name==="TimeoutError") throw e3; throw new Error("接口返
 var full=(j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||"";
 if(!full){
 var notice="接口连上了，但这次没有返回任何内容。可能是网络中途断了一下——把刚才的话再发一次试试，还不行就点「新对话」重开。";
-bubble.textContent=notice; history.push({role:"assistant",content:notice});
+bubble.textContent=notice; chatHistory.push({role:"assistant",content:notice});
 }else{
 bubble.innerHTML=fmt(full); el("chat").scrollTop=el("chat").scrollHeight;
-history.push({role:"assistant",content:full});
+chatHistory.push({role:"assistant",content:full});
 }
 }catch(e){
 clearInterval(tick);
@@ -361,23 +372,28 @@ var m=errText(e);
 var st=(m.match(/接口返回 (\d+)/)||[])[1];
 var hint=st?apiErrHint(+st):((isNetworkError(e)||(e&&e.name==="TimeoutError"))?networkHint():"把刚才的话再发一次试试；一直这样就换个网络，或点「新对话」重开。");
 bubble.innerHTML="⚠ 这次没连上："+esc(m)+"<br><br>"+hint;
-history.pop();
+if(chatHistory.length>1) chatHistory.pop();
 }
 el("typing").style.display="none";
 }
 async function send(text){
-if(busy) return; var v=(text||el("input").value).trim(); if(!v)return;
-el("input").value=""; autoGrow(); addMsg("user",v); history.push({role:"user",content:v}); busy=true; el("sendBtn").disabled=true;
+var v="";
 try{
+if(busy){ addMsg("assistant","上一条还在处理中，等它出结果（最多 90 秒会自动停下报错），或者点顶部「🔍 诊断」看卡在哪一步。"); return; }
+v=(text||el("input").value).trim(); if(!v) return;
+busy=true; el("sendBtn").disabled=true;
+el("input").value=""; autoGrow(); addMsg("user",v); chatHistory.push({role:"user",content:v});
 if(apiKey){ await onlineReply();}
 else{ el("typing").style.display="block"; await new Promise(function(r){setTimeout(r,500)}); el("typing").style.display="none";
-var rep=offlineReply(v); var b=addMsg("assistant",rep.text); history.push({role:"assistant",content:rep.text});
+var rep=offlineReply(v); var b=addMsg("assistant",rep.text); chatHistory.push({role:"assistant",content:rep.text});
 if(rep.quiz) addQuiz(b,rep.quiz[0],rep.quiz[1],rep.quiz[2],rep.quiz[3]);
 }
 }catch(e){
-addMsg("assistant","⚠ 出了点问题："+errText(e)+"\n\n再发一次试试；一直不行就点右上角「新对话」重开。");
+try{ addMsg("assistant","⚠ 发送时出错了："+(e&&e.name?e.name+"：":"")+errText(e)+"\n\n再发一次试试；一直这样就点顶部「🔍 诊断」，把诊断结果截图发回来。"); }catch(e2){}
 }
-busy=false; el("sendBtn").disabled=false; el("typing").style.display="none"; el("input").focus();
+busy=false;
+try{ el("sendBtn").disabled=false; el("typing").style.display="none"; }catch(e3){}
+try{ el("input").focus(); }catch(e4){}
 }
 function closeDrawer(){ el("sidebar").classList.remove("open"); el("backdrop").classList.remove("show");}
 function openDrawer(){ el("sidebar").classList.add("open"); el("backdrop").classList.add("show");}
@@ -390,7 +406,9 @@ function autoGrow(){ var t=el("input"); t.style.height="auto"; t.style.height=Ma
 el("sendBtn").onclick=function(){send()};
 el("input").addEventListener("input",autoGrow);
 el("input").addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
-document.querySelectorAll(".quick button").forEach(function(b){ b.onclick=function(){ send(b.getAttribute("data-q"));};});
+/* NodeList.forEach 在老 Safari 上不存在，改用普通循环逐个绑 */
+var quickBtns=document.querySelectorAll(".quick button");
+for(var qi=0; qi<quickBtns.length; qi++){ (function(b){ b.onclick=function(){ send(b.getAttribute("data-q")); }; })(quickBtns[qi]); }
 el("menuBtn").onclick=function(){ el("sidebar").classList.contains("open")?closeDrawer():openDrawer();};
 el("backdrop").onclick=closeDrawer;
 el("closeMenu").onclick=closeDrawer;
@@ -417,9 +435,76 @@ addMsg("assistant","⚠ Key 验证没通过："+m+"\n\n"+hint+"\n\n在连上之�
 }
 verifying=false; el("saveKey").disabled=false; el("saveKey").textContent="连接";
 };
-el("clearBtn").onclick=function(){ history=[{role:"system",content:SYSTEM}]; el("chatWrap").innerHTML=""; currentLesson=""; done={}; renderLessons(); greet();};
+el("clearBtn").onclick=function(){ chatHistory=[{role:"system",content:SYSTEM}]; el("chatWrap").innerHTML=""; currentLesson=""; done={}; /* ---------- 全局错误兜底：没被接住的运行时错误也打进对话区，不许静默没反应 ---------- */
+function showRuntimeError(label, e){
+try{
+var msg=(e&&e.name?e.name+"：":"")+(e&&e.message?e.message:String(e||"未知错误"));
+addMsg("assistant","⚠ 页面运行时错误（"+label+"）："+msg+"\n\n把这一条截图发回来就能定位。也可以点顶部「🔍 诊断」跑一遍自检。");
+}catch(err){}
+}
+window.addEventListener("error",function(ev){ showRuntimeError("error", (ev&&ev.error)?ev.error:(ev?ev.message:null)); });
+window.addEventListener("unhandledrejection",function(ev){ showRuntimeError("unhandledrejection", ev?ev.reason:null); });
+
+/* ---------- 诊断：逐条打印自检结果，每步带超时，绝不挂死；只报 Key 长度，绝不显示 Key 内容 ---------- */
+var diagnosing=false;
+function diagAppend(bubble, text, bad){
+var d=document.createElement("div"); d.className="diagline"+(bad?" bad":""); d.textContent=text; bubble.appendChild(d);
+el("chat").scrollTop=el("chat").scrollHeight;
+}
+function diagPost(bubble, effKey, doneFn){
+diagAppend(bubble,"(c) 正在发最小测试消息 POST /chat/completions（model="+el("model").value+"，内容 hi，max_tokens 5）…最多等 20 秒");
+fetchWithTimeout("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+effKey},body:JSON.stringify({model:el("model").value,messages:[{role:"user",content:"hi"}],max_tokens:5,stream:false})},20000).then(function(res2){
+diagAppend(bubble,"(c) /chat/completions 返回状态码："+res2.status+(res2.status===200?" ✓ 发消息这条链是通的":(res2.status===401?"（Key 不被接受）":(res2.status===402?"（账户余额不足）":(res2.status===429?"（太频繁或额度受限）":"")))), res2.status!==200);
+doneFn();
+},function(e2){
+diagAppend(bubble,"(c) POST 抛异常："+(e2&&e2.name?e2.name+"：":"")+errText(e2),true);
+doneFn();
+});
+}
+function runDiagnostics(){
+if(diagnosing) return; diagnosing=true;
+var btn=el("diagBtn"); btn.disabled=true; btn.textContent="诊断中…";
+var bubble=addMsg("assistant","🔍 开始诊断（页面版本 "+PAGE_VERSION+"）——每一步都会出结果，卡住也会在超时后报错。");
+var finished=false;
+var watchdog=setTimeout(function(){
+if(finished) return; finished=true; diagnosing=false;
+try{ diagAppend(bubble,"⏱ 诊断总超时（60 秒）：有一步没在时限内返回。把上面已打印的步骤截图发回来。",true); }catch(e){}
+btn.disabled=false; btn.textContent="🔍 诊断";
+},60000);
+function finish(){
+if(finished) return; finished=true; clearTimeout(watchdog); diagnosing=false;
+btn.disabled=false; btn.textContent="🔍 诊断";
+diagAppend(bubble,"—— 诊断结束。把这一整段截图发回来即可（只有 Key 长度，没有 Key 内容）。 ——");
+}
+var typed=""; try{ typed=el("apiKey").value.replace(/\s+/g,""); }catch(e){}
+var effKey=apiKey||typed;
+/* (a) Key 状态：只报有没有、长度、是否 sk- 开头 */
+if(typed){ diagAppend(bubble,"(a) 输入框里的 Key：已填，长度 "+typed.length+"，"+(typed.indexOf("sk-")===0?"是 sk- 开头 ✓":"不是 sk- 开头 ✗ 可能粘错了"), typed.indexOf("sk-")!==0); }
+else{ diagAppend(bubble,"(a) 输入框里的 Key：未填",true); }
+diagAppend(bubble,"(a) 已验证保存在内存里的 Key："+(apiKey?("有，长度 "+apiKey.length):"无（还没点「连接」并验证成功过）"), !apiKey);
+/* (d) 发送按钮状态与版本（先报，免得后面卡住看不到） */
+diagAppend(bubble,"(d) 发送按钮："+(el("sendBtn").disabled?"被禁用中 disabled":"可点")+"；忙碌标记 busy="+busy+"；验证中标记 verifying="+verifying+"；页面版本 "+PAGE_VERSION);
+diagAppend(bubble,"(d) 浏览器标识："+(navigator.userAgent||"未知"));
+/* (b) GET /models */
+diagAppend(bubble,"(b) 正在请求 GET https://api.deepseek.com/models …最多等 15 秒");
+var headers={}; if(effKey) headers["Authorization"]="Bearer "+effKey;
+fetchWithTimeout("https://api.deepseek.com/models",{method:"GET",headers:headers},15000).then(function(res){
+diagAppend(bubble,"(b) /models 返回状态码："+res.status+(res.status===200?" ✓ 接口通、Key 被接受":(res.status===401?"（Key 不被接受，或没带 Key）":"")), res.status!==200);
+},function(e){
+diagAppend(bubble,"(b) GET 抛异常："+(e&&e.name?e.name+"：":"")+errText(e)+" —— 没拿到状态码，多半是网络到不了 api.deepseek.com 或被浏览器/App 拦截。",true);
+}).then(function(){
+if(!effKey){ diagAppend(bubble,"(c) 跳过：没有可用 Key。先在顶部粘贴 Key，再跑一次诊断。",true); finish(); return; }
+diagPost(bubble, effKey, finish);
+},function(){
+if(!effKey){ finish(); return; }
+diagPost(bubble, effKey, finish);
+});
+}
+el("diagBtn").onclick=function(){ runDiagnostics(); };
+
+renderLessons(); greet();};
 function greet(){
-addMsg("assistant","こんにちは，我是你的日语老师。\n\n两种用法：**点目录选一课**，或直接在下面说你想学什么（比如「我想学 たい 形」）。我会先问目标、做一道探边题找边界，再给你路线、逐点带学。\n\n还没填 DeepSeek Key 的话，现在是离线体验模式，能完整学「は 与 です」和「たい形」两课；填了 Key 就能学全部内容、自由提问。\n\n今日は 何を 勉強（べんきょう）したい？今天想学什么？");
+addMsg("assistant","こんにちは，我是你的日语老师。\n\n两种用法：**点目录选一课**，或直接在下面说你想学什么（比如「我想学 たい 形」）。我会先问目标、做一道探边题找边界，再给你路线、逐点带学。\n\n还没填 DeepSeek Key 的话，现在是离线体验模式，能完整学「は 与 です」和「たい形」两课；填了 Key 就能学全部内容、自由提问。\n\n今日は 何を 勉強（べんきょう）したい？今天想学什么？\n\n发消息没反应时，点顶部「🔍 诊断」跑一遍自检，把整段结果截图发回来。（页面版本 "+PAGE_VERSION+"）");
 }
 renderLessons(); greet();
 </script>
