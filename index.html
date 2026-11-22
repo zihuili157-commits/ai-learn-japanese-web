@@ -72,14 +72,54 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;min-height:0}
 .msg.me .bubble{background:var(--bubble-me);color:var(--bg);border-top-right-radius:4px}
 @media (prefers-color-scheme: dark){.msg.me .bubble{color:#141311}}
 .bubble strong{font-weight:700}
-.bubble.keyline{display:block;text-align:center;font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;padding:12px 8px;margin:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow-wrap:anywhere}
-.bubble.formula{display:block;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;font-weight:700;letter-spacing:.03em;overflow-wrap:anywhere}
-.bubble table{border-collapse:collapse;margin:10px 0;font-size:14px}
-.bubble td,.bubble th{border:1px solid var(--line);padding:6px 10px}
-.quizbox{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-.quizbox button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px;color:var(--ink);min-height:48px;line-height:1.6}
-.quizbox button.right{border-color:var(--teal);background:#ecfdf5;color:#065f46}
-.quizbox button.wrong{border-color:var(--accent);background:#fef2f2;color:#991b1b}
+.msg.ai .bubble{white-space:normal}
+.msg.me .bubble{white-space:pre-wrap}
+/* ---- 学习笔记式排版：标题+分隔线 / 关键句定格 / 公式装盒 / 例句引用块 ---- */
+.bubble .md-p{margin:0 0 10px;line-height:1.8}
+.bubble .md-p:last-child{margin-bottom:0}
+.bubble h3.md-heading,.bubble h4.md-heading{font-family:"Noto Serif SC",serif;line-height:1.5;color:var(--ink)}
+.bubble h3.md-heading{font-size:17px;margin:16px 0 10px;padding-bottom:7px;border-bottom:2px solid var(--line)}
+.bubble h4.md-heading{font-size:15.5px;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.bubble h3.md-heading:first-child,.bubble h4.md-heading:first-child{margin-top:0}
+.bubble .md-subhead{font-weight:700;font-size:15.5px;line-height:1.6;margin:15px 0 9px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.bubble .md-subhead:first-child{margin-top:0}
+.bubble .md-hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+.bubble .keyline{display:block;text-align:center;font-family:"Noto Serif SC",serif;font-size:19px;font-weight:700;line-height:1.7;padding:16px 10px;margin:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.bubble .formula-box{display:block;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px 10px;margin:12px 0;font-weight:700;font-size:15.5px;letter-spacing:.03em;line-height:1.7;overflow-wrap:anywhere}
+.bubble .example-block{border-left:3px solid var(--teal);background:var(--surface2);border-radius:0 10px 10px 0;padding:10px 13px;margin:8px 0;font-size:16px;line-height:1.8;overflow-wrap:anywhere}
+.bubble ul.md-list,.bubble ol.md-list{margin:4px 0 12px;padding-left:24px;line-height:1.8}
+.bubble ul.md-list li,.bubble ol.md-list li{margin:5px 0}
+.bubble li.example-li{font-size:16px}
+.bubble .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0}
+.bubble table{border-collapse:collapse;font-size:14px;line-height:1.6}
+.bubble td,.bubble th{border:1px solid var(--line);padding:7px 11px;text-align:left;vertical-align:top}
+.bubble th{background:var(--surface2);font-weight:700;white-space:nowrap}
+.bubble code{background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.92em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.bubble .codeblock{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.bubble .codeblock code{background:transparent;border:0;padding:0;font-size:13.5px;line-height:1.65;white-space:pre}
+/* ---- 选择题：整行可点按钮卡片 ---- */
+.choice-group{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px}
+.choice-btn{display:flex;gap:11px;align-items:flex-start;text-align:left;width:100%;min-height:52px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);line-height:1.65;font-size:15px;-webkit-tap-highlight-color:transparent}
+.choice-btn:hover{border-color:var(--accent)}
+.choice-btn:active{border-color:var(--accent);background:var(--surface2)}
+.choice-badge{flex:none;width:27px;height:27px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font-weight:700;font-size:13.5px;line-height:1;margin-top:1px}
+.choice-text{flex:1;min-width:0;overflow-wrap:anywhere}
+.choice-group.answered .choice-btn{opacity:.5;cursor:default}
+.choice-group.answered .choice-btn:hover{border-color:var(--line)}
+.choice-group.answered .choice-btn.selected{opacity:1;border-color:var(--teal);background:#ecfdf5;color:#065f46}
+.choice-group.answered .choice-btn.selected .choice-badge{border-color:var(--teal);background:var(--teal);color:#fff}
+@media (prefers-color-scheme: dark){.choice-group.answered .choice-btn.selected{background:#0d2b26;color:#6ee7b7}}
+.choice-hint{font-size:12px;color:var(--muted);text-align:center;padding:2px 0 0}
+.choice-group.answered .choice-hint{display:none}
+/* ---- 离线检查题（与选择题同款按钮） ---- */
+.quizbox{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.quizbox .quiz-title{line-height:1.7;margin-bottom:2px}
+.quizbox button{display:flex;gap:11px;align-items:flex-start;text-align:left;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;color:var(--ink);min-height:52px;line-height:1.65;font-size:15px}
+.quizbox button:disabled{cursor:default;opacity:.55}
+.quizbox button.right{border-color:var(--teal);background:#ecfdf5;color:#065f46;opacity:1}
+.quizbox button.wrong{border-color:var(--accent);background:#fef2f2;color:#991b1b;opacity:1}
+@media (prefers-color-scheme: dark){.quizbox button.right{background:#0d2b26;color:#6ee7b7}.quizbox button.wrong{background:#331a17;color:#fca5a5}}
+.quizbox .quiz-fb{font-size:14px;line-height:1.7;padding:2px 2px 0}
 .typing{color:var(--muted);font-size:13px;padding:0 16px 6px;max-width:760px;margin:0 auto;width:100%;flex:none}
 /* composer */
 .composer{border-top:1px solid var(--line);background:var(--surface);padding:12px 16px calc(12px + env(safe-area-inset-bottom));flex:none}
@@ -128,10 +168,12 @@ aside.open{display:block;position:fixed;top:0;left:0;bottom:0;width:min(86vw,330
 .msg{gap:7px}
 .avatar{width:28px;height:28px;font-size:12px;margin-top:2px}
 .bubble{max-width:calc(100% - 35px);font-size:15.5px;line-height:1.8;padding:11px 13px}
-.bubble.keyline{font-size:16.5px;padding:10px 4px}
-.bubble.formula{font-size:14.5px;padding:9px 6px}
-.bubble table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:13.5px}
-.quizbox button{font-size:15px;padding:13px 12px}
+.bubble .keyline{font-size:17.5px;padding:13px 6px}
+.bubble .formula-box{font-size:15px;padding:10px 7px}
+.bubble .example-block{font-size:16px;padding:10px 12px}
+.bubble table{font-size:13.5px}
+.choice-btn{min-height:54px;padding:13px 13px;font-size:15.5px}
+.quizbox button{font-size:15px;padding:13px 12px;min-height:54px}
 .composer{padding:10px 10px calc(10px + env(safe-area-inset-bottom))}
 textarea{font-size:16px;min-height:48px;padding:12px 13px;border-radius:12px}
 .send{min-height:48px;padding:0 18px;border-radius:12px}
@@ -153,7 +195,7 @@ aside.open{animation:none}
 </head>
 <body>
 <header>
-<div class="brand">あ <span>ai learn</span> 学日语 <span class="ver" id="verBadge">v5</span></div>
+<div class="brand">あ <span>ai learn</span> 学日语 <span class="ver" id="verBadge">v6</span></div>
 <button class="pill" id="menuBtn" style="display:none">📚 目录</button>
 <div class="keybar">
 <input type="password" id="apiKey" placeholder="粘贴你的 DeepSeek API Key（sk-…）" autocomplete="off"/>
@@ -199,13 +241,13 @@ aside.open{animation:none}
 <details class="help"><summary>没有 Key / Key 填哪儿？点开看</summary>
 <p>去 platform.deepseek.com 注册 → API Keys → 新建，复制 sk- 开头的那串粘到上面。Key 只留在这次打开的页面内存里，不保存、不上传到别处；关掉页面就没了，下次再粘一次即可。没填 Key 也能先用离线体验模式学前几课。</p>
 </details>
-<p class="hint">学法就是 ai learn 那套：先问目标 → 探边找边界 → 给路线 → 逐点带学（关键句定格＋公式装盒）→ 每点两道题检查，答错不往上建。发消息没反应时，点顶部「🔍 诊断」，把结果截图发回来。页面版本 <strong id="verFoot">v5</strong></p>
+<p class="hint">学法就是 ai learn 那套：先问目标 → 探边找边界 → 给路线 → 逐点带学（关键句定格＋公式装盒）→ 每点两道题检查，答错不往上建。发消息没反应时，点顶部「🔍 诊断」，把结果截图发回来。页面版本 <strong id="verFoot">v6</strong></p>
 </div>
 </main>
 </div>
 
 <script>
-var SYSTEM = "你是一位日语老师，正在用 ai learn 的 teach 方法带一位中国大学生学日语，教材参考《超好笑！我是日语学习书》的顺序（共63个语法点）。全程用中文讲解，日语例句带假名注音和中文翻译。严格按流程：1)开学先用一个简短问题确认目标（理解原理/会用/应试/先混脸熟）和当前水平；2)给一道探边题找知识边界，不许假定学生会或不会；3)给出依赖路线（地基→接续→用法→例句→造句），用简洁列表呈现；4)逐点带学：每次只讲一个点，先给一句单独成行，再把公式居中成行呈现，然后给3个由易到难的原味例句，最后让学生造一个句子；5)每个点学完出1道选择题检查，答错要逐个拆干扰项对应的误解、带学生回看，不许直接进入下一点；6)学生用中文说出想表达的意思时，先教他日语怎么说、让他复述，再无缝继续对话；7)语气亲切、具体、不说空话，不一次倒一大堆内容，每次回复末尾给出清晰的下一步（让学生回答/选择/造句）。排版：关键句用「…」单独一行，公式用「公式：…」单独一行，方便前端渲染。";
+var SYSTEM = "你是一位日语老师，正在用 ai learn 的 teach 方法带一位中国大学生学日语，教材参考《超好笑！我是日语学习书》的顺序（共63个语法点）。全程用中文讲解，日语例句带假名注音和中文翻译。严格按流程：1)开学先用一个简短问题确认目标（理解原理/会用/应试/先混脸熟）和当前水平；2)给一道探边题找知识边界，不许假定学生会或不会；3)给出依赖路线（地基→接续→用法→例句→造句），用简洁列表呈现；4)逐点带学：每次只讲一个点，先给一句单独成行，再把公式居中成行呈现，然后给3个由易到难的原味例句，最后让学生造一个句子；5)每个点学完出1道选择题检查，答错要逐个拆干扰项对应的误解、带学生回看，不许直接进入下一点；6)学生用中文说出想表达的意思时，先教他日语怎么说、让他复述，再无缝继续对话；7)语气亲切、具体、不说空话，不一次倒一大堆内容，每次回复末尾给出清晰的下一步（让学生回答/选择/造句）。【选择题格式·必须遵守】凡是出选择题（探边题、检查题、目标确认等需要学生做选择的题都算）：题干单独成段；每个选项单独一行、以「A. 」开头（依次 B. C. D.），不要把多个选项挤在同一行、不要用表格装选项；出题时不要同时公布答案或解析，等学生作答后再讲。学生会直接点选选项作答，你会收到形如「B. 选项全文」的消息，那就是他的选择，按对错正常批改解析。【排版·必须遵守】用 Markdown 组织回复：小标题用 ### 单独一行；判断句和结论用 **粗体**；关键句（每条回复最多一句）用「…」单独一行；公式用「公式：…」单独一行；例句每条单独一行、以 ① ② ③ 编号开头；列表用「- 」逐行写。不要把所有内容挤成一整段。";
 
 var LESSONS1 = [
 ["は 与 です","わたしは 学生です","判断句的骨架"],
@@ -226,7 +268,7 @@ var LESSONS2 = [
 ["授受 くれる・あげる・もらう","友達が 教えてくれました","人情的方向"]
 ];
 var done = {};
-var PAGE_VERSION = "v5";
+var PAGE_VERSION = "v6";
 /* 对话记录不用 history 这个名字：它和浏览器内置的 window.history 同名，
    在部分 Safari 上全局 var 盖不住内置对象，history.push 会抛错且发送链静默中断。 */
 var chatHistory = [{role:"system",content:SYSTEM}];
@@ -247,27 +289,187 @@ fill(el("lessons1"),LESSONS1,0); fill(el("lessons2"),LESSONS2,7);
 var n=Object.keys(done).length;
 el("progressText").textContent = n? ("已学完 "+n+" 课："+Object.keys(done).join("、")): "还没学完任何一课";
 }
-function fmt(t){
-var s=t.replace(/&/g,"&amp;").replace(/</g,"&lt;");
-s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
-s=s.replace(/(.+)/g,'<span class="keyline">$1</span>');
-s=s.replace(/公式[:：](.+)/g,'<span class="formula">$1</span>');
+/* ---------- Markdown 渲染 + 选择题解析（学习笔记式排版） ---------- */
+function escHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function inlineFmt(escaped){
+var s=escaped;
+s=s.replace(/`([^`]+)`/g,"<code>$1</code>");
+s=s.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+s=s.replace(/__([^_]+)__/g,"<strong>$1</strong>");
+s=s.replace(/(^|[^*\w])\*([^*\n]+)\*/g,"$1<em>$2</em>");
 return s;
+}
+function matchOption(line){
+var t=line.replace(/^\s+/,"");
+var m=t.match(/^([A-Da-d])\s*[\.．、\)）:：]\s*(.+)$/);
+if(m) return {letter:m[1].toUpperCase(), text:m[2].replace(/\s+$/,""), kind:"letter"};
+var m2=t.match(/^([1-4])\s*[\.．、\)）]\s*(.+)$/);
+if(m2) return {letter:m2[1], text:m2[2].replace(/\s+$/,""), kind:"num", num:parseInt(m2[1],10)};
+return null;
+}
+function renderChoiceGroup(opts){
+var h='<div class="choice-group" role="group" aria-label="选择题选项">';
+for(var n=0;n<opts.length;n++){
+h+='<button type="button" class="choice-btn" data-letter="'+escHtml(opts[n].letter)+'"><span class="choice-badge">'+escHtml(opts[n].letter)+'</span><span class="choice-text">'+inlineFmt(escHtml(opts[n].text))+'</span></button>';
+}
+h+='<div class="choice-hint">点一下选项就能作答，不用打字</div></div>';
+return h;
+}
+function renderTable(tlines){
+var rows=[];
+for(var r=0;r<tlines.length;r++){
+var cells=tlines[r].split("|");
+var out=[];
+for(var c=0;c<cells.length;c++){ var v=cells[c].replace(/^\s+|\s+$/g,""); if(c===0&&v==="") continue; if(c===cells.length-1&&v==="") continue; out.push(v); }
+if(out.length) rows.push(out);
+}
+if(!rows.length) return "";
+var sep=true;
+for(var s2=0;s2<rows[1>=rows.length?0:1].length;s2++){ if(!/^:?-{2,}:?$/.test(rows.length>1?rows[1][s2]:"x")) sep=false; }
+var bodyStart=(rows.length>1&&sep)?2:1;
+var h='<div class="tablewrap"><table><thead><tr>';
+for(var hc=0;hc<rows[0].length;hc++) h+="<th>"+inlineFmt(escHtml(rows[0][hc]))+"</th>";
+h+="</tr></thead><tbody>";
+for(var br=bodyStart;br<rows.length;br++){ h+="<tr>"; for(var bc=0;bc<rows[br].length;bc++) h+="<td>"+inlineFmt(escHtml(rows[br][bc]))+"</td>"; h+="</tr>"; }
+h+="</tbody></table></div>";
+return h;
+}
+function renderMarkdown(raw){
+var keylineUsed=false, inExample=false;
+var src=String(raw||"").split("\n");
+var lines=[];
+for(var ei=0;ei<src.length;ei++){
+var ln=src[ei], tr=ln.replace(/^\s+|\s+$/g,"");
+if(/^[A-D]\s*[\.．]/.test(tr) && /\s[B-D]\s*[\.．]\s/.test(ln)){
+var parts=ln.split(/\s+(?=[A-D]\s*[\.．]\s)/);
+for(var pi=0;pi<parts.length;pi++) lines.push(parts[pi]);
+} else lines.push(ln);
+}
+var html="", i=0;
+while(i<lines.length){
+var rawLine=lines[i], line=rawLine.replace(/^\s+|\s+$/g,"");
+if(line===""){ i++; continue; }
+if(line.indexOf("```")===0){
+var codeLines=[]; i++;
+while(i<lines.length && lines[i].replace(/^\s+/,"").indexOf("```")!==0){ codeLines.push(lines[i]); i++; }
+i++;
+html+='<pre class="codeblock"><code>'+escHtml(codeLines.join("\n"))+'</code></pre>';
+continue;
+}
+if(/^(-{3,}|\*{3,}|_{3,})$/.test(line)){ html+='<hr class="md-hr"/>'; i++; continue; }
+var hm=line.match(/^(#{1,4})\s+(.+)$/);
+if(hm){ var htag=hm[1].length<=2?"h3":"h4"; html+="<"+htag+' class="md-heading">'+inlineFmt(escHtml(hm[2]))+"</"+htag+">"; inExample=hm[2].indexOf("例")>=0; i++; continue; }
+if(line.charAt(0)==="|"){
+var tlines=[];
+while(i<lines.length && lines[i].replace(/^\s+/,"").charAt(0)==="|"){ tlines.push(lines[i].replace(/^\s+|\s+$/g,"")); i++; }
+html+=renderTable(tlines); continue;
+}
+var firstOpt=matchOption(line);
+if(firstOpt && ((firstOpt.kind==="letter"&&firstOpt.letter==="A")||(firstOpt.kind==="num"&&firstOpt.num===1))){
+var opts=[], j=i, expectLetter="A", expectNum=1;
+while(j<lines.length){
+var l2=lines[j].replace(/^\s+|\s+$/g,"");
+if(l2===""){
+var k=j+1; while(k<lines.length && lines[k].replace(/^\s+|\s+$/g,"")==="") k++;
+if(k<lines.length){ var nxt=matchOption(lines[k]); if(nxt&&nxt.kind===firstOpt.kind&&((nxt.kind==="letter"&&nxt.letter===expectLetter)||(nxt.kind==="num"&&nxt.num===expectNum))){ j=k; continue; } }
+break;
+}
+var om=matchOption(l2);
+if(!om||om.kind!==firstOpt.kind) break;
+if(om.kind==="letter"&&om.letter!==expectLetter) break;
+if(om.kind==="num"&&om.num!==expectNum) break;
+opts.push(om);
+if(om.kind==="letter") expectLetter=String.fromCharCode(expectLetter.charCodeAt(0)+1); else expectNum++;
+j++;
+}
+var need=firstOpt.kind==="letter"?2:3;
+if(opts.length>=need){ html+=renderChoiceGroup(opts); i=j; inExample=false; continue; }
+}
+var fm=line.match(/^公式\s*[:：]\s*(.+)$/);
+if(fm){ html+='<div class="formula-box">'+inlineFmt(escHtml(fm[1]))+'</div>'; i++; continue; }
+var km=line.match(/^「(.+)」[。．.]?$/);
+if(km&&!keylineUsed){ html+='<div class="keyline">'+inlineFmt(escHtml(km[1]))+'</div>'; keylineUsed=true; i++; continue; }
+if(line.charAt(0)===">"){ html+='<div class="example-block">'+inlineFmt(escHtml(line.replace(/^>\s?/,"")))+'</div>'; i++; continue; }
+if(/^[①②③④⑤⑥⑦⑧⑨⑩]/.test(line)||/^例\s*\d*\s*[:：・]/.test(line)||/^例句\s*\d*\s*[:：]/.test(line)){
+html+='<div class="example-block">'+inlineFmt(escHtml(line))+'</div>'; i++; continue;
+}
+var bm=line.match(/^\*\*(.+)\*\*[：:]?$/);
+if(bm&&bm[1].length<=24){ html+='<div class="md-subhead">'+escHtml(bm[1])+'</div>'; if(bm[1].indexOf("例")>=0) inExample=true; i++; continue; }
+if(/^\s*[-*・]\s+/.test(rawLine)||/^\s*\d+\s*[\.．、]\s+/.test(rawLine)){
+var isOrdered=/^\s*\d+/.test(rawLine), items=[];
+while(i<lines.length){
+var ll=lines[i];
+if(ll.replace(/^\s+|\s+$/g,"")==="") break;
+if(isOrdered&&/^\s*\d+\s*[\.．、]\s+/.test(ll)){ items.push(ll.replace(/^\s+|\s+$/g,"").replace(/^\d+\s*[\.．、]\s+/,"")); i++; }
+else if(!isOrdered&&/^\s*[-*・]\s+/.test(ll)){ items.push(ll.replace(/^\s+|\s+$/g,"").replace(/^[-*・]\s+/,"")); i++; }
+else break;
+}
+var tag=isOrdered?"ol":"ul";
+html+="<"+tag+' class="md-list">';
+for(var li2=0;li2<items.length;li2++){ html+='<li'+(inExample?' class="example-li"':"")+">"+inlineFmt(escHtml(items[li2]))+"</li>"; }
+html+="</"+tag+">"; continue;
+}
+var hasJp=/[぀-ヿ]/.test(line);
+if(inExample&&hasJp){ html+='<div class="example-block">'+inlineFmt(escHtml(line))+'</div>'; i++; continue; }
+html+='<p class="md-p">'+inlineFmt(escHtml(line))+'</p>'; i++;
+}
+return html;
+}
+function fmt(t){ return renderMarkdown(t); }
+function wireChoices(bubble){
+if(!bubble||!bubble.querySelectorAll) return;
+var groups=bubble.querySelectorAll(".choice-group");
+for(var gi=0;gi<groups.length;gi++){
+(function(group){
+if(group.getAttribute("data-wired")) return;
+group.setAttribute("data-wired","1");
+var btns=group.querySelectorAll(".choice-btn");
+for(var bi=0;bi<btns.length;bi++){
+(function(btn){
+btn.onclick=function(){
+if(group.className.indexOf("answered")>=0) return;
+group.className+=" answered";
+for(var x=0;x<btns.length;x++){ btns[x].disabled=true; }
+btn.className+=" selected";
+var letter=btn.getAttribute("data-letter")||"";
+var textEl=btn.querySelector(".choice-text");
+var answer=letter+". "+(textEl?textEl.textContent:"");
+el("chat").scrollTop=el("chat").scrollHeight;
+setTimeout(function(){ send(answer); },320);
+};
+})(btns[bi]);
+}
+})(groups[gi]);
+}
 }
 function addMsg(role, text){
 var d=document.createElement("div"); d.className="msg "+(role==="user"?"me":"ai");
-d.innerHTML='<div class="avatar">'+(role==="user"?"我":"あ")+'</div><div class="bubble">'+fmt(text)+'</div>';
-el("chatWrap").appendChild(d); el("chat").scrollTop=el("chat").scrollHeight;
-return d.querySelector(".bubble");
+var inner;
+if(role==="user"){ inner=escHtml(text).replace(/\n/g,"<br>"); }
+else{ inner=renderMarkdown(text); }
+d.innerHTML='<div class="avatar">'+(role==="user"?"我":"あ")+'</div><div class="bubble">'+inner+'</div>';
+el("chatWrap").appendChild(d);
+var bubble=d.querySelector(".bubble");
+if(role!=="user") wireChoices(bubble);
+el("chat").scrollTop=el("chat").scrollHeight;
+return bubble;
 }
 function addQuiz(bubble, q, opts, answer, explain){
 var box=document.createElement("div"); box.className="quizbox";
-var title=document.createElement("div"); title.innerHTML="<strong>检查题：</strong>"+q; box.appendChild(title);
+var title=document.createElement("div"); title.className="quiz-title"; title.innerHTML="<strong>检查题：</strong>"+escHtml(q); box.appendChild(title);
+var finished=false;
 opts.forEach(function(o,i){
-var b=document.createElement("button"); b.textContent=["A","B","C","D"][i]+"．"+o;
+var b=document.createElement("button"); b.type="button";
+var badge=document.createElement("span"); badge.className="choice-badge"; badge.textContent=["A","B","C","D"][i];
+var tx=document.createElement("span"); tx.className="choice-text"; tx.textContent=o;
+b.appendChild(badge); b.appendChild(tx);
 b.onclick=function(){
-if(i===answer){ b.className="right"; box.insertAdjacentHTML("beforeend","<div style='font-size:14px'>✓ 对了。"+explain+"</div>"); if(currentLesson){done[currentLesson]=1; renderLessons();}}
-else{ b.className="wrong"; box.insertAdjacentHTML("beforeend","<div style='font-size:14px'>✗ 不对。"+explain+" 回到上面关键句再看一眼，换一个试试。</div>");}
+if(finished) return;
+var old=box.querySelectorAll(".quiz-fb"); for(var z=0;z<old.length;z++) old[z].parentNode.removeChild(old[z]);
+if(i===answer){ finished=true; b.className="right"; var all=box.querySelectorAll("button"); for(var y=0;y<all.length;y++) all[y].disabled=true; b.disabled=false;
+box.insertAdjacentHTML("beforeend","<div class='quiz-fb'>✓ 对了。"+escHtml(explain)+"</div>"); if(currentLesson){done[currentLesson]=1; renderLessons();} }
+else{ b.className="wrong"; b.disabled=true; box.insertAdjacentHTML("beforeend","<div class='quiz-fb'>✗ 不对。"+escHtml(explain)+" 回到上面关键句再看一眼，换一个试试。</div>"); }
+el("chat").scrollTop=el("chat").scrollHeight;
 };
 box.appendChild(b);
 });
@@ -363,7 +565,7 @@ if(!full){
 var notice="接口连上了，但这次没有返回任何内容。可能是网络中途断了一下——把刚才的话再发一次试试，还不行就点「新对话」重开。";
 bubble.textContent=notice; chatHistory.push({role:"assistant",content:notice});
 }else{
-bubble.innerHTML=fmt(full); el("chat").scrollTop=el("chat").scrollHeight;
+bubble.innerHTML=renderMarkdown(full); wireChoices(bubble); el("chat").scrollTop=el("chat").scrollHeight;
 chatHistory.push({role:"assistant",content:full});
 }
 }catch(e){
